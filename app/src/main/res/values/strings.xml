@@ -5,4 +5,10 @@
     <string name="dialog_title">How to scan resistors</string>
     <string name="dialog_ok">OK</string>
     <string name="action_settings">Settings</string>
+    <string name="caption_value_Ohm">Ohm</string>
+    <string name="caption_value_KOhm">Kohm</string>
+    <string name="caption_value_MOhm">Mohm</string>
+    <string name="caption_value_GOhm">Gohm</string>
+    <string name="caption_value_TOhm">Tohm</string>
+    <string name="caption_value_POhm">Pohm</string>
 </resources>

@@ -21,21 +21,21 @@ public class ResistorImageProcessor {
     // HSV colour bounds
     private static final Scalar COLOR_BOUNDS[][] = {
             { new Scalar(0, 0, 0),   new Scalar(180, 250, 50) },    // black
-            { new Scalar(0, 90, 10), new Scalar(15, 250, 100) },    // brown
+            { new Scalar(0, 31, 41), new Scalar(25, 250, 99) },    // brown
             { new Scalar(0, 0, 0),   new Scalar(0, 0, 0) },         // red (defined by two bounds)
-            { new Scalar(4, 100, 100), new Scalar(9, 250, 150) },   // orange
-            { new Scalar(20, 130, 100), new Scalar(30, 250, 160) }, // yellow
-            { new Scalar(45, 50, 60), new Scalar(72, 250, 150) },   // green
+            { new Scalar(7, 150, 150), new Scalar(18, 250, 250) },   // orange
+            { new Scalar(25, 130, 100), new Scalar(34, 250, 160) }, // yellow
+            { new Scalar(35, 60, 60), new Scalar(75, 250, 150) },   // green
             { new Scalar(80, 50, 50), new Scalar(106, 250, 150) },  // blue
-            { new Scalar(130, 40, 50), new Scalar(155, 250, 150) }, // purple
+            { new Scalar(130, 60, 50), new Scalar(165, 250, 150) }, // purple
             { new Scalar(0,0, 50), new Scalar(180, 50, 80) },       // gray
             { new Scalar(0, 0, 90), new Scalar(180, 15, 140) }      // white
     };
 
     // red wraps around in HSV, so we need two ranges
-    private static Scalar LOWER_RED1 = new Scalar(0, 65, 100);
-    private static Scalar UPPER_RED1 = new Scalar(2, 250, 150);
-    private static Scalar LOWER_RED2 = new Scalar(171, 65, 50);
+    private static Scalar LOWER_RED1 = new Scalar(0, 65, 60);
+    private static Scalar UPPER_RED1 = new Scalar(8, 100, 100);
+    private static Scalar LOWER_RED2 = new Scalar(158, 65, 50);
     private static Scalar UPPER_RED2 = new Scalar(180, 250, 150);
 
     private SparseIntArray _locationValues = new SparseIntArray(4);
@@ -46,7 +46,7 @@ public class ResistorImageProcessor {
         int cols = imageMat.cols();
         int rows = imageMat.rows();
 
-        Mat subMat = imageMat.submat(rows/2, (rows/2)+30, (cols/2) - 50, (cols/2) + 50);
+        Mat subMat = imageMat.submat((rows/2)-40, (rows/2)+40, (cols/2) - 100, (cols/2) + 100);
         Mat filteredMat = new Mat();
         Imgproc.cvtColor(subMat, subMat, Imgproc.COLOR_RGBA2BGR);
         Imgproc.bilateralFilter(subMat, filteredMat, 5, 80, 80);
@@ -67,11 +67,11 @@ public class ResistorImageProcessor {
 
             String valueStr;
             if(value >= 1e3 && value < 1e6)
-                valueStr = String.valueOf(value/1e3) + " KOhm";
+                valueStr = String.valueOf(value/1e3) + " Kohm";
             else if(value >= 1e6)
-                valueStr = String.valueOf(value/1e6) + " MOhm";
+                valueStr = String.valueOf(value/1e6) + " Mohm";
             else
-                valueStr = String.valueOf(value) + " Ohm";
+                valueStr = String.valueOf(value) + " ohm";
 
             if(value <= 1e9)
                 Imgproc.putText(imageMat, valueStr, new Point(10, 100), Imgproc.FONT_HERSHEY_COMPLEX,
@@ -79,7 +79,10 @@ public class ResistorImageProcessor {
         }
 
         Scalar color = new Scalar(255, 0, 0, 255);
-        Imgproc.line(imageMat, new Point(cols/2 - 50, rows/2), new Point(cols/2 + 50, rows/2 ), color, 2);
+        Imgproc.line(imageMat, new Point(cols/2 - 100, (rows/2) - 40), new Point(cols/2 + 100, (rows/2) - 40 ), color, 2);
+        Imgproc.line(imageMat, new Point(cols/2 - 100, (rows/2) + 40), new Point(cols/2 + 100, (rows/2) + 40 ), color, 2);
+        Imgproc.line(imageMat, new Point(cols/2 - 100, (rows/2) - 40), new Point(cols/2 - 100, (rows/2) + 40 ), color, 2);
+        Imgproc.line(imageMat, new Point(cols/2 + 100, (rows/2) - 40), new Point(cols/2 + 100, (rows/2) + 40 ), color, 2);
         return imageMat;
     }
 
@@ -114,7 +117,6 @@ public class ResistorImageProcessor {
                 {
                     Moments M = Imgproc.moments(contours.get(contIdx));
                     int cx = (int) (M.get_m10() / M.get_m00());
-
                     // if a colour band is split into multiple contours
                     // we take the largest and consider only its centroid
                     boolean shouldStoreLocation = true;

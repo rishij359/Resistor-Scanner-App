@@ -26,7 +26,6 @@ public class MainActivity extends AppCompatActivity {
     }
     public void openActivity(View v)
     {
-        Toast.makeText(this, "Button is opening the new activity", Toast.LENGTH_SHORT).show();
         Intent intent = new Intent(this, MainActivity2.class);
         startActivity(intent);
     }
