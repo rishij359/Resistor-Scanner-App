@@ -1,31 +1,16 @@
 package com.rishijain.resistorscanner;
 
-import org.opencv.android.BaseLoaderCallback;
-import org.opencv.android.CameraActivity;
-import org.opencv.android.CameraBridgeViewBase.CvCameraViewFrame;
-import org.opencv.android.JavaCamera2View;
-import org.opencv.android.LoaderCallbackInterface;
-import org.opencv.android.OpenCVLoader;
-import org.opencv.core.Core;
-import org.opencv.core.Mat;
-import org.opencv.android.CameraBridgeViewBase;
-import org.opencv.android.CameraBridgeViewBase.CvCameraViewListener2;
-import org.opencv.imgproc.Imgproc;
-
-import android.app.AlertDialog;
-import android.content.DialogInterface;
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.util.Log;
-import android.view.MenuItem;
 import android.view.SurfaceView;
-import android.view.WindowManager;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import java.util.Collections;
-import java.util.List;
+import org.opencv.android.BaseLoaderCallback;
+import org.opencv.android.CameraBridgeViewBase;
+import org.opencv.android.JavaCamera2View;
+import org.opencv.android.OpenCVLoader;
+import org.opencv.core.Mat;
 
 public class MainActivity2 extends AppCompatActivity implements CameraBridgeViewBase.CvCameraViewListener2 {
 
@@ -59,23 +44,6 @@ public class MainActivity2 extends AppCompatActivity implements CameraBridgeView
                 }
             }
         };
-        SharedPreferences settings = getPreferences(0);
-        if(!settings.getBoolean("shownInstructions", false))
-        {
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setMessage(R.string.dialog_message)
-                    .setTitle(R.string.dialog_title)
-                    .setNeutralButton(R.string.dialog_ok, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            dialog.dismiss();
-                        }
-                    })
-                    .create().show();
-            SharedPreferences.Editor editor = settings.edit();
-            editor.putBoolean("shownInstructions", true);
-            editor.apply();
-        }
 
     }
 
@@ -120,7 +88,6 @@ public class MainActivity2 extends AppCompatActivity implements CameraBridgeView
 
     @Override
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
-        Mat frame = inputFrame.rgba();
         return _resistorProcessor.processFrame(inputFrame);
     }
 }

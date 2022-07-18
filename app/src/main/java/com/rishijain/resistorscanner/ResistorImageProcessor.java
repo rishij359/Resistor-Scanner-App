@@ -16,10 +16,10 @@ import java.util.List;
 
 public class ResistorImageProcessor {
 
-    private static final int NUM_CODES = 10;
+    private static final int CODES = 10;
 
     // HSV colour bounds
-    private static final Scalar COLOR_BOUNDS[][] = {
+    private static final Scalar[][] COLOR_BOUNDS = {
             { new Scalar(0, 0, 0),   new Scalar(180, 250, 50) },    // black
             { new Scalar(0, 31, 41), new Scalar(25, 250, 99) },    // brown
             { new Scalar(0, 0, 0),   new Scalar(0, 0, 0) },         // red (defined by two bounds)
@@ -33,12 +33,12 @@ public class ResistorImageProcessor {
     };
 
     // red wraps around in HSV, so we need two ranges
-    private static Scalar LOWER_RED1 = new Scalar(0, 65, 60);
-    private static Scalar UPPER_RED1 = new Scalar(8, 100, 100);
-    private static Scalar LOWER_RED2 = new Scalar(158, 65, 50);
-    private static Scalar UPPER_RED2 = new Scalar(180, 250, 150);
+    private static final Scalar LOWER_RED1 = new Scalar(0, 65, 60);
+    private static final Scalar UPPER_RED1 = new Scalar(8, 100, 100);
+    private static final Scalar LOWER_RED2 = new Scalar(158, 65, 50);
+    private static final Scalar UPPER_RED2 = new Scalar(180, 250, 150);
 
-    private SparseIntArray _locationValues = new SparseIntArray(4);
+    private final SparseIntArray ValuesAtCentroid = new SparseIntArray(4);
 
     public Mat processFrame(CvCameraViewFrame frame)
     {
@@ -46,7 +46,7 @@ public class ResistorImageProcessor {
         int cols = imageMat.cols();
         int rows = imageMat.rows();
 
-        Mat subMat = imageMat.submat((rows/2)-40, (rows/2)+40, (cols/2) - 100, (cols/2) + 100);
+        Mat subMat = imageMat.submat((rows/2)-20, (rows/2)+20, (cols/2) - 60, (cols/2) + 60);
         Mat filteredMat = new Mat();
         Imgproc.cvtColor(subMat, subMat, Imgproc.COLOR_RGBA2BGR);
         Imgproc.bilateralFilter(subMat, filteredMat, 5, 80, 80);
@@ -54,24 +54,24 @@ public class ResistorImageProcessor {
 
         findLocations(filteredMat);
 
-        if(_locationValues.size() >= 3)
+        if(ValuesAtCentroid.size() >= 3)
         {
             // recover the resistor value by iterating through the centroid locations
             // in an ascending manner and using their associated colour values
-            int k_tens = _locationValues.keyAt(0);
-            int k_units = _locationValues.keyAt(1);
-            int k_power = _locationValues.keyAt(2);
+            int k_tens = ValuesAtCentroid.keyAt(0);
+            int k_units = ValuesAtCentroid.keyAt(1);
+            int k_power = ValuesAtCentroid.keyAt(2);
 
-            int value = 10*_locationValues.get(k_tens) + _locationValues.get(k_units);
-            value *= Math.pow(10, _locationValues.get(k_power));
+            int value = 10*ValuesAtCentroid.get(k_tens) + ValuesAtCentroid.get(k_units);
+            value *= Math.pow(10, ValuesAtCentroid.get(k_power));
 
             String valueStr;
             if(value >= 1e3 && value < 1e6)
-                valueStr = String.valueOf(value/1e3) + " Kohm";
+                valueStr = value / 1e3 + " Kohm";
             else if(value >= 1e6)
-                valueStr = String.valueOf(value/1e6) + " Mohm";
+                valueStr = value / 1e6 + " Mohm";
             else
-                valueStr = String.valueOf(value) + " ohm";
+                valueStr = value + " ohm";
 
             if(value <= 1e9)
                 Imgproc.putText(imageMat, valueStr, new Point(10, 100), Imgproc.FONT_HERSHEY_COMPLEX,
@@ -79,23 +79,23 @@ public class ResistorImageProcessor {
         }
 
         Scalar color = new Scalar(255, 0, 0, 255);
-        Imgproc.line(imageMat, new Point(cols/2 - 100, (rows/2) - 40), new Point(cols/2 + 100, (rows/2) - 40 ), color, 2);
-        Imgproc.line(imageMat, new Point(cols/2 - 100, (rows/2) + 40), new Point(cols/2 + 100, (rows/2) + 40 ), color, 2);
-        Imgproc.line(imageMat, new Point(cols/2 - 100, (rows/2) - 40), new Point(cols/2 - 100, (rows/2) + 40 ), color, 2);
-        Imgproc.line(imageMat, new Point(cols/2 + 100, (rows/2) - 40), new Point(cols/2 + 100, (rows/2) + 40 ), color, 2);
+        Imgproc.line(imageMat, new Point(cols/2.0 - 60, (rows/2.0) - 20), new Point(cols/2.0 + 60, (rows/2.0) - 20 ), color, 2);
+        Imgproc.line(imageMat, new Point(cols/2.0 - 60, (rows/2.0) + 20), new Point(cols/2.0 + 60, (rows/2.0) + 20 ), color, 2);
+        Imgproc.line(imageMat, new Point(cols/2.0 - 60, (rows/2.0) - 20), new Point(cols/2.0 - 60, (rows/2.0) + 20 ), color, 2);
+        Imgproc.line(imageMat, new Point(cols/2.0 + 60, (rows/2.0) - 20), new Point(cols/2.0 + 60, (rows/2.0) + 20 ), color, 2);
         return imageMat;
     }
 
     // find contours of colour bands and the x-coords of their centroids
     private void findLocations(Mat searchMat)
     {
-        _locationValues.clear();
+        ValuesAtCentroid.clear();
         SparseIntArray areas = new SparseIntArray(4);
 
-        for(int i = 0; i < NUM_CODES; i++)
+        for(int i = 0; i < CODES; i++)
         {
             Mat mask = new Mat();
-            List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
+            List<MatOfPoint> contours = new ArrayList<>();
             Mat hierarchy = new Mat();
 
             if(i == 2)
@@ -120,11 +120,11 @@ public class ResistorImageProcessor {
                     // if a colour band is split into multiple contours
                     // we take the largest and consider only its centroid
                     boolean shouldStoreLocation = true;
-                    for(int locIdx = 0; locIdx < _locationValues.size(); locIdx++)
+                    for(int locIdx = 0; locIdx < ValuesAtCentroid.size(); locIdx++)
                     {
-                        if(Math.abs(_locationValues.keyAt(locIdx) - cx) < 10)
+                        if(Math.abs(ValuesAtCentroid.keyAt(locIdx) - cx) < 10)
                         {
-                            if (areas.get(_locationValues.keyAt(locIdx)) > area)
+                            if (areas.get(ValuesAtCentroid.keyAt(locIdx)) > area)
                             {
                                 shouldStoreLocation = false;
                                 break;
@@ -140,7 +140,7 @@ public class ResistorImageProcessor {
                     if(shouldStoreLocation)
                     {
                         areas.put(cx, area);
-                        _locationValues.put(cx, i);
+                        ValuesAtCentroid.put(cx, i);
                     }
                 }
             }
