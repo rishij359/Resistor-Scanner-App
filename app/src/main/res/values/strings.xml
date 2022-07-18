@@ -11,4 +11,7 @@
     <string name="caption_value_GOhm">Gohm</string>
     <string name="caption_value_TOhm">Tohm</string>
     <string name="caption_value_POhm">Pohm</string>
+    <string name="textview">TextView</string>
+    <string name="start">Start</string>
+    <string name="thumbnail">Thumbnail</string>
 </resources>
