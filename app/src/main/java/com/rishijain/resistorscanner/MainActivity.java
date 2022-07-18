@@ -1,32 +1,28 @@
 package com.rishijain.resistorscanner;
 
+import android.os.Bundle;
+import android.widget.ListView;
+
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.content.Intent;
-import android.os.Bundle;
-import android.view.View;
-import android.widget.Button;
-import android.widget.Toast;
+import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
-    public Button button;
+    ListView listView;
+    String[] arr = {"Resistor Scanner", "Calculate Minimum resistors required"};
+    ArrayList<Class> list_class = new ArrayList<>();
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        button = findViewById(R.id.button);
-        button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                openActivity(view);
-            }
-        });
-    }
-    public void openActivity(View v)
-    {
-        Intent intent = new Intent(this, MainActivity2.class);
-        startActivity(intent);
+        list_class.add(MainActivity2.class);
+        list_class.add(MinResistor.class);
+        listView = findViewById(R.id.listview);
+        MyAdapter ad = new MyAdapter(this, R.layout.list_layout, arr, list_class);
+        listView.setAdapter(ad);
+
+
     }
 }
